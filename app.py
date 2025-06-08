@@ -118,23 +118,36 @@ def execute_query(query, params=()):
 # === GENEROWANIE PDF ===
 class PDF(FPDF):
     def header(self):
-        self.add_font('Helvetica', '', 'Helvetica.ttf', uni=True)
-        self.set_font('Helvetica', 'B', 15)
+        # Należy upewnić się, że czcionka jest dostępna w środowisku Render
+        try:
+            self.add_font('Helvetica', '', 'Helvetica.ttf', uni=True)
+            self.set_font('Helvetica', 'B', 15)
+        except RuntimeError:
+            self.set_font('Arial', 'B', 15)
         self.cell(0, 10, 'Raport Projektu', 0, 1, 'C')
         self.ln(10)
 
     def footer(self):
         self.set_y(-15)
-        self.set_font('Helvetica', 'I', 8)
+        try:
+            self.set_font('Helvetica', 'I', 8)
+        except RuntimeError:
+            self.set_font('Arial', 'I', 8)
         self.cell(0, 10, f'Strona {self.page_no()}', 0, 0, 'C')
 
     def chapter_title(self, title):
-        self.set_font('Helvetica', 'B', 12)
+        try:
+            self.set_font('Helvetica', 'B', 12)
+        except RuntimeError:
+            self.set_font('Arial', 'B', 12)
         self.cell(0, 10, title, 0, 1, 'L')
         self.ln(4)
 
     def chapter_body(self, body):
-        self.set_font('Helvetica', '', 12)
+        try:
+            self.set_font('Helvetica', '', 12)
+        except RuntimeError:
+            self.set_font('Arial', '', 12)
         self.multi_cell(0, 10, body.encode('latin-1', 'replace').decode('latin-1'))
         self.ln()
 
@@ -242,10 +255,10 @@ def display_page(pathname):
                         ],
                         value='name_asc'
                     )),
-                    dbc.Col(dbc.FormCheck(
-                        type="switch",
+                    dbc.Col(dbc.Switch(
                         id="theme-switch",
                         label="Tryb Ciemny",
+                        value=False,
                     ), width="auto", className="d-flex align-items-center justify-content-end")
                 ], align="center")), className="filter-container"),
 
@@ -404,7 +417,56 @@ def create_risk_matrix(project_id):
     body = html.Tbody(rows)
     return dbc.Table([header, body], bordered=True, className="risk-matrix-table mt-4")
 
+def render_news_tab(project_id):
+    news = fetch_data('SELECT * FROM news WHERE project_id = ? ORDER BY date DESC', (project_id,))
+    news_list = [dbc.ListGroupItem([html.Strong(f"{n['date']}"), html.P(n['content'], className="mb-0")]) for n in news] if news else [dbc.ListGroupItem("Brak aktualności.")]
+    return html.Div([
+        dbc.ListGroup(news_list, flush=True, className="mb-3"),
+        html.Hr(),
+        html.H5("Dodaj nową aktualność", className="mt-4"),
+        dbc.Row([
+            dbc.Col(
+                dcc.DatePickerSingle(
+                    id='new-news-date',
+                    date=datetime.now().date(),
+                    display_format='YYYY-MM-DD',
+                    className="w-100"
+                ),
+                md=4,
+            ),
+            dbc.Col(
+                dbc.Textarea(id="new-news-content", placeholder="Opisz postęp prac..."),
+                md=8
+            ),
+        ], className="mb-2"),
+        dbc.Button("Dodaj aktualność", id="add-news-btn", color="primary", className="mt-2"),
+        html.Div(id="add-news-feedback", className="mt-2")
+    ])
+
+def create_project_dashboard(project_id):
+    project = fetch_data('SELECT * FROM projects WHERE id = ?', (project_id,))[0]
+    return dbc.Container([
+        dcc.Store(id='project-id-store', data=project_id),
+        dbc.Row([
+            dbc.Col(dcc.Link([html.I(className="bi bi-arrow-left-circle-fill fs-2 me-3"), "Portfolio"], href="/", className="text-decoration-none d-flex align-items-center text-secondary")),
+            dbc.Col(html.H2(project['name'], className="fw-bold mb-0")),
+            dbc.Col([
+                dbc.Button([html.I(className="bi bi-file-earmark-pdf-fill me-2"), "Raport PDF"], id="download-pdf-btn", color="secondary", className="me-2"),
+                dcc.Link(dbc.Button([html.I(className="bi bi-easel2-fill me-2"),"Prezentacja"], color="primary", className="me-2"), href=f"/projekt/{project_id}/prezentacja"),
+                dbc.Button([html.I(className="bi bi-trash-fill me-2"), "Usuń"], id="open-delete-modal-btn", color="danger", outline=True)
+            ], width="auto", className="d-flex")
+        ], className="align-items-center mt-4 mb-2"),
+        html.Hr(),
+        # KPI Cards (can be a separate function)
+        dbc.Tabs([
+            dbc.Tab(label="Aktualności", tab_id="news"),
+            dbc.Tab(label="Macierz Ryzyk", tab_id="risk-matrix"),
+            dbc.Tab(label="Kamienie Milowe", tab_id="milestones"),
+            dbc.Tab(label="Budżet", tab_id="budget"),
+        ], id="project-tabs", active_tab="news"),
+        html.Div(id="tab-content", className="p-4")
+    ], fluid=True, className="p-4")
+
 if __name__ == '__main__':
     setup_database()
     app.run(debug=True)
-
