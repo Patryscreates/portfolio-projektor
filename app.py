@@ -80,17 +80,52 @@ def setup_database():
         cursor.execute("SELECT COUNT(id) FROM projects")
         if cursor.fetchone()[0] == 0:
             sample_projects = [
-                ('Modernizacja Linii Tramwajowej T1', 'Janina Nowak', 'Tor-Bud S.A.', 5200000, 'W toku', '2024-01-15', '2025-06-30'),
-                ('Budowa Systemu Park&Ride', 'Adam Kowalski', 'Infrasystem Sp. z o.o.', 3400000, 'Zagrożony', '2023-09-01', '2024-12-31'),
-                ('Wdrożenie Nowego Systemu Biletowego', 'Ewa Wiśniewska', 'PixelTech', 1800000, 'Zakończony', '2023-03-01', '2024-01-20')
+                (
+                    'System Zarządzania Infrastrukturą IT',
+                    'Janina Nowak',
+                    'ITBuild S.A.',
+                    5200000,
+                    'W toku',
+                    '2024-01-15',
+                    '2025-06-30'
+                ),
+                (
+                    'Migracja do Chmury',
+                    'Adam Kowalski',
+                    'CloudMasters Sp. z o.o.',
+                    3400000,
+                    'Zagrożony',
+                    '2023-09-01',
+                    '2024-12-31'
+                ),
+                (
+                    'Wdrożenie Platformy E-commerce',
+                    'Ewa Wiśniewska',
+                    'PixelTech',
+                    1800000,
+                    'Zakończony',
+                    '2023-03-01',
+                    '2024-01-20'
+                )
             ]
             cursor.executemany("INSERT INTO projects (name, project_manager, contractor_name, budget_plan, status, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?, ?)", sample_projects)
             conn.commit()
             sample_data = {
-                'news': [(1, '2024-05-10', 'Zakończono prace na odcinku A.'), (2, '2024-05-20', 'Problem z podwykonawcą.')],
-                'milestones': [(1, 'Prace projektowe', '2024-01-15', '2024-03-31', 'Ukończony'), (1, 'Roboty ziemne', '2024-04-01', '2024-07-15', 'W realizacji')],
-                'budget_items': [(1, 'Materiały', 'Materiały', 1800000), (1, 'Robocizna', 'Zasoby', 1200000)],
-                'risks': [(1, 'Opóźnienia w dostawach', 'Średnie', 'Wysoki', 'Aktywne', 'Alternatywny dostawca.')]
+                'news': [
+                    (1, '2024-05-10', 'Zakończono konfigurację serwerów.'),
+                    (2, '2024-05-20', 'Problem z usługą chmurową.')
+                ],
+                'milestones': [
+                    (1, 'Analiza wymagań', '2024-01-15', '2024-03-31', 'Ukończony'),
+                    (1, 'Implementacja backendu', '2024-04-01', '2024-07-15', 'W realizacji')
+                ],
+                'budget_items': [
+                    (1, 'Sprzęt serwerowy', 'Infrastruktura', 1800000),
+                    (1, 'Prace developerskie', 'Zasoby', 1200000)
+                ],
+                'risks': [
+                    (1, 'Opóźnienia dostaw sprzętu', 'Średnie', 'Wysoki', 'Aktywne', 'Alternatywny dostawca.')
+                ]
             }
             cursor.executemany("INSERT INTO news (project_id, date, content) VALUES (?, ?, ?)", sample_data['news'])
             cursor.executemany("INSERT INTO milestones (project_id, title, start_date, end_date, status) VALUES (?, ?, ?, ?, ?)", sample_data['milestones'])
