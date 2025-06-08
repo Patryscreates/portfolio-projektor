@@ -1,19 +1,45 @@
+/* === ZMIENNE KOLORÓW (MOTYWY) === */
+:root {
+    --bg-primary: #f8f9fa;
+    --bg-secondary: #e9ecef;
+    --text-primary: #212529;
+    --text-muted: #6c757d;
+    --border-color: #dee2e6;
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --card-shadow: rgba(196, 2, 2, 0.1);
+    --card-shadow-hover: rgba(196, 2, 2, 0.2);
+    --brand-red: #c40202;
+    --brand-yellow: #f0a30a;
+    --brand-dark: #343a40;
+}
+
+body.dark {
+    --bg-primary: #212529;
+    --bg-secondary: #343a40;
+    --text-primary: #f8f9fa;
+    --text-muted: #adb5bd;
+    --border-color: #495057;
+    --card-bg: rgba(52, 58, 64, 0.85);
+    --card-shadow: rgba(240, 163, 10, 0.1);
+    --card-shadow-hover: rgba(240, 163, 10, 0.2);
+}
+
 /* === GŁÓWNY MOTYW I TŁO === */
 body {
-    /* Używamy subtelnego gradientu dla nowoczesnego wyglądu */
-    background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%) !important;
     min-height: 100vh;
     font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-    color: #343a40;
+    color: var(--text-primary);
+    transition: background-color 0.3s, color 0.3s;
 }
 
 /* === STYLIZACJA PASKÓW PRZEWIJANIA === */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: #c40202aa; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #c40202; }
+::-webkit-scrollbar-thumb { background: var(--brand-red); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #a00101; }
 
-/* === BANER POWITALNY (NOWY) === */
+/* === BANER POWITALNY === */
 .hero-banner {
     position: relative;
     border-radius: 1rem;
@@ -50,139 +76,112 @@ body {
     text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
 }
 
-
-/* === STRONA GŁÓWNA - KARTY PROJEKTÓW === */
-.card-link {
-    color: inherit;
-    text-decoration: none;
+/* === FILTRY I PRZEŁĄCZNIK MOTYWU === */
+.filter-container {
+    background-color: var(--card-bg);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
 }
+.theme-switch .form-check-input {
+    background-color: var(--brand-dark);
+    border-color: var(--brand-yellow);
+}
+.theme-switch .form-check-input:checked {
+    background-color: var(--brand-yellow);
+    border-color: var(--brand-yellow);
+}
+
+/* === KARTY PROJEKTÓW === */
+.card-link { color: inherit; text-decoration: none; }
 .project-card {
-    border: none;
+    border: 1px solid var(--border-color);
     border-radius: 1rem;
-    box-shadow: 0 4px 24px 0 rgba(196, 2, 2, 0.1);
+    box-shadow: 0 4px 24px 0 var(--card-shadow);
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--card-bg);
 }
 .card-link:hover .project-card {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 10px 40px 0 rgba(196, 2, 2, 0.2);
+    box-shadow: 0 10px 40px 0 var(--card-shadow-hover);
 }
 .project-card .card-header {
-    background-color: #343a40;
-    color: #ffffff;
+    background-color: var(--brand-dark);
+    color: var(--white);
     font-weight: 600;
     border-top-left-radius: 1rem;
     border-top-right-radius: 1rem;
 }
-.progress-bar {
-    background-color: #f0a30a !important;
-}
+.progress-bar { background-color: var(--brand-yellow) !important; }
 
 /* === NAGŁÓWKI I PRZYCISKI === */
 .main-header {
-    color: #c40202;
+    color: var(--brand-red);
     font-weight: 700;
-    border-bottom: 3px solid #f0a30a;
+    border-bottom: 3px solid var(--brand-yellow);
     padding-bottom: 10px;
 }
-.btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:focus {
-    background-color: #c40202 !important;
-    border-color: #c40202 !important;
-    box-shadow: none !important;
-}
-.btn-success, .btn-success:hover {
-    background-color: #28a745 !important;
-    border-color: #28a745 !important;
-}
+.btn-primary { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; }
+.btn-success { background-color: var(--success) !important; border-color: var(--success) !important; }
 
 /* === WIDOK SZCZEGÓŁÓW PROJEKTU === */
 .nav-tabs .nav-link.active {
-    color: #c40202;
-    border-bottom: 3px solid #c40202;
+    color: var(--brand-red);
+    border-bottom: 3px solid var(--brand-red);
     font-weight: 600;
 }
 .kpi-card {
     border: none;
-    border-left: 5px solid #f0a30a;
-    background-color: #ffffff;
+    border-left: 5px solid var(--brand-yellow);
+    background-color: var(--card-bg);
     padding: 1rem;
     text-align: center;
     border-radius: 0.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+/* === MACIERZ RYZYK === */
+.risk-matrix-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 5px;
+}
+.risk-matrix-table th, .risk-matrix-table td {
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 5px;
+    height: 100px;
+}
+.risk-matrix-table th {
+    background-color: var(--bg-secondary);
+}
+.risk-cell {
+    transition: transform 0.2s;
+}
+.risk-cell:hover {
+    transform: scale(1.05);
+}
+.risk-low { background-color: #28a74533; }
+.risk-medium { background-color: #ffc10733; }
+.risk-high { background-color: #dc354533; }
 
-/* === TRYB PREZENTACJI - EFEKT WOW === */
+/* === TRYB PREZENTACJI === */
 .presentation-body {
     background: linear-gradient(135deg, #343a40 0%, #212529 100%) !important;
     color: #f8f9fa;
 }
-.presentation-container {
-    max-width: 1000px;
-    margin: auto;
-    padding: 3rem 1rem;
-}
-.presentation-title {
-    font-weight: 800;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    letter-spacing: 0.03em;
-    border-left: 8px solid #f0a30a;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 0.5rem;
-}
-.presentation-kpi-card {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-    padding: 2rem 1rem;
-    text-align: center;
-    backdrop-filter: blur(5px);
-    transition: transform 0.3s;
-}
-.presentation-kpi-card:hover {
-    transform: scale(1.05);
-}
-.presentation-kpi-card .kpi-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #f0a30a;
-}
-.presentation-kpi-card .kpi-label {
-    font-size: 1rem;
-    color: #ced4da;
-}
+.presentation-container { max-width: 1000px; margin: auto; padding: 3rem 1rem; }
+.presentation-title { font-weight: 800; font-size: clamp(2rem, 5vw, 3.5rem); padding: 1.5rem; margin-bottom: 2rem; letter-spacing: 0.03em; border-left: 8px solid var(--brand-yellow); background: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; }
+.presentation-kpi-card { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem; padding: 2rem 1rem; text-align: center; backdrop-filter: blur(5px); transition: transform 0.3s; }
+.presentation-kpi-card:hover { transform: scale(1.05); }
+.presentation-kpi-card .kpi-value { font-size: 2.5rem; font-weight: 700; color: var(--brand-yellow); }
+.presentation-kpi-card .kpi-label { font-size: 1rem; color: #ced4da; }
 
-/* === STYLIZOWANA OŚ CZASU (TIMELINE) W PREZENTACJI === */
-.timeline {
-    border-left: 3px solid rgba(240, 163, 10, 0.3); /* #f0a30a */
-    position: relative;
-    list-style: none;
-    padding-left: 2.5rem;
-    margin-top: 2rem;
-}
-.timeline-item {
-    margin-bottom: 2rem;
-}
-.timeline-item::before {
-    content: '';
-    background: #343a40;
-    border-radius: 50%;
-    border: 4px solid #f0a30a;
-    position: absolute;
-    left: -13px;
-    width: 24px;
-    height: 24px;
-    z-index: 2;
-    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.5);
-}
-.timeline-item .timeline-card {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-}
-.timeline-item .timeline-date {
-    font-weight: 600;
-    color: #f0a30a;
-}
+/* === OŚ CZASU === */
+.timeline { border-left: 3px solid rgba(240, 163, 10, 0.3); position: relative; list-style: none; padding-left: 2.5rem; margin-top: 2rem; }
+.timeline-item { margin-bottom: 2rem; }
+.timeline-item::before { content: ''; background: var(--bg-primary); border-radius: 50%; border: 4px solid var(--brand-yellow); position: absolute; left: -13px; width: 24px; height: 24px; z-index: 2; box-shadow: 0 2px 8px 0 rgba(0,0,0,0.5); }
+.timeline-item .timeline-date { font-weight: 600; color: var(--brand-yellow); }
