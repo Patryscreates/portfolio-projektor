@@ -5,12 +5,15 @@
     --text-primary: #212529;
     --text-muted: #6c757d;
     --border-color: #dee2e6;
-    --card-bg: rgba(255, 255, 255, 0.95);
-    --card-shadow: rgba(196, 2, 2, 0.1);
-    --card-shadow-hover: rgba(196, 2, 2, 0.2);
+    --card-bg: #ffffff;
+    --card-shadow: rgba(196, 2, 2, 0.08);
+    --card-shadow-hover: rgba(196, 2, 2, 0.15);
     --brand-red: #c40202;
     --brand-yellow: #f0a30a;
     --brand-dark: #343a40;
+    --success: #198754;
+    --info: #0dcaf0;
+    --danger: #dc3545;
 }
 
 body.dark {
@@ -19,24 +22,24 @@ body.dark {
     --text-primary: #f8f9fa;
     --text-muted: #adb5bd;
     --border-color: #495057;
-    --card-bg: rgba(52, 58, 64, 0.85);
+    --card-bg: #2c3238; /* Ciemniejszy kolor karty */
     --card-shadow: rgba(240, 163, 10, 0.1);
     --card-shadow-hover: rgba(240, 163, 10, 0.2);
 }
 
 /* === GŁÓWNY MOTYW I TŁO === */
 body {
-    background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%) !important;
+    background-color: var(--bg-primary) !important;
     min-height: 100vh;
     font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
     color: var(--text-primary);
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 /* === STYLIZACJA PASKÓW PRZEWIJANIA === */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: var(--brand-red); border-radius: 10px; }
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--brand-red); border-radius: 10px; border: 2px solid var(--bg-secondary); }
 ::-webkit-scrollbar-thumb:hover { background: #a00101; }
 
 /* === BANER POWITALNY === */
@@ -49,7 +52,7 @@ body {
 }
 .hero-banner img {
     width: 100%;
-    height: 350px;
+    height: 300px;
     object-fit: cover;
     display: block;
 }
@@ -59,8 +62,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, rgba(196, 2, 2, 0.7) 0%, rgba(52, 58, 64, 0.7) 100%);
-    opacity: 0.8;
+    background: linear-gradient(45deg, rgba(196, 2, 2, 0.6) 0%, rgba(52, 58, 64, 0.6) 100%);
 }
 .hero-banner .hero-text {
     position: absolute;
@@ -76,21 +78,19 @@ body {
     text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
 }
 
-/* === FILTRY I PRZEŁĄCZNIK MOTYWU === */
+/* === FILTRY I KONTROLKI === */
 .filter-container {
     background-color: var(--card-bg);
-    padding: 1rem;
+    padding: 1rem 1.5rem;
     border-radius: 0.75rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
 }
-.theme-switch .form-check-input {
-    background-color: var(--brand-dark);
-    border-color: var(--brand-yellow);
-}
-.theme-switch .form-check-input:checked {
-    background-color: var(--brand-yellow);
-    border-color: var(--brand-yellow);
+.form-control, .form-select, .Select-control {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
 }
 
 /* === KARTY PROJEKTÓW === */
@@ -99,89 +99,116 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 1rem;
     box-shadow: 0 4px 24px 0 var(--card-shadow);
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     background: var(--card-bg);
 }
 .card-link:hover .project-card {
-    transform: translateY(-8px) scale(1.02);
+    transform: translateY(-8px);
     box-shadow: 0 10px 40px 0 var(--card-shadow-hover);
 }
 .project-card .card-header {
-    background-color: var(--brand-dark);
-    color: var(--white);
+    background-color: transparent;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
     font-weight: 600;
-    border-top-left-radius: 1rem;
-    border-top-right-radius: 1rem;
+    font-size: 1.1rem;
 }
-.progress-bar { background-color: var(--brand-yellow) !important; }
-
-/* === NAGŁÓWKI I PRZYCISKI === */
-.main-header {
-    color: var(--brand-red);
-    font-weight: 700;
-    border-bottom: 3px solid var(--brand-yellow);
-    padding-bottom: 10px;
-}
-.btn-primary { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; }
-.btn-success { background-color: var(--success) !important; border-color: var(--success) !important; }
 
 /* === WIDOK SZCZEGÓŁÓW PROJEKTU === */
+.nav-tabs .nav-link {
+    color: var(--text-muted);
+    border: none;
+    border-bottom: 3px solid transparent;
+}
 .nav-tabs .nav-link.active {
     color: var(--brand-red);
     border-bottom: 3px solid var(--brand-red);
     font-weight: 600;
+    background-color: transparent;
 }
 .kpi-card {
     border: none;
     border-left: 5px solid var(--brand-yellow);
     background-color: var(--card-bg);
-    padding: 1rem;
+    padding: 1.5rem;
     text-align: center;
     border-radius: 0.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.kpi-card .kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--brand-red);
 }
 
 /* === MACIERZ RYZYK === */
 .risk-matrix-table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 5px;
+    border-collapse: collapse;
 }
 .risk-matrix-table th, .risk-matrix-table td {
     border: 1px solid var(--border-color);
-    padding: 0.5rem;
+    padding: 1rem;
     text-align: center;
     vertical-align: middle;
-    border-radius: 5px;
-    height: 100px;
+    height: 120px;
+    font-weight: 600;
 }
 .risk-matrix-table th {
     background-color: var(--bg-secondary);
 }
 .risk-cell {
+    background-color: var(--bg-primary);
+}
+.risk-pill {
+    font-weight: bold;
+    font-size: 0.8rem;
+    cursor: pointer;
     transition: transform 0.2s;
 }
-.risk-cell:hover {
-    transform: scale(1.05);
+.risk-pill:hover {
+    transform: scale(1.1);
+    z-index: 10;
 }
-.risk-low { background-color: #28a74533; }
-.risk-medium { background-color: #ffc10733; }
-.risk-high { background-color: #dc354533; }
+/* Kolory dla macierzy, dostosowane do trybu jasnego/ciemnego */
+.risk-cell.risk-low-Niski, .risk-cell.risk-low-Średni, .risk-cell.risk-medium-Niski {
+    background-color: rgba(40, 167, 69, 0.2);
+}
+.risk-cell.risk-low-Wysoki, .risk-cell.risk-medium-Średni, .risk-cell.risk-high-Niski {
+    background-color: rgba(240, 163, 10, 0.2);
+}
+.risk-cell.risk-medium-Wysoki, .risk-cell.risk-high-Średni, .risk-cell.risk-high-Wysoki {
+    background-color: rgba(196, 2, 2, 0.2);
+}
 
 /* === TRYB PREZENTACJI === */
 .presentation-body {
     background: linear-gradient(135deg, #343a40 0%, #212529 100%) !important;
     color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 56px); /* 56px to wysokość paska nawigacji */
 }
-.presentation-container { max-width: 1000px; margin: auto; padding: 3rem 1rem; }
-.presentation-title { font-weight: 800; font-size: clamp(2rem, 5vw, 3.5rem); padding: 1.5rem; margin-bottom: 2rem; letter-spacing: 0.03em; border-left: 8px solid var(--brand-yellow); background: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; }
-.presentation-kpi-card { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem; padding: 2rem 1rem; text-align: center; backdrop-filter: blur(5px); transition: transform 0.3s; }
-.presentation-kpi-card:hover { transform: scale(1.05); }
-.presentation-kpi-card .kpi-value { font-size: 2.5rem; font-weight: 700; color: var(--brand-yellow); }
-.presentation-kpi-card .kpi-label { font-size: 1rem; color: #ced4da; }
+.presentation-container {
+    width: 100%;
+    max-width: 1100px;
+    padding: 4rem 2rem;
+    position: relative;
+}
+.presentation-title {
+    font-weight: 800;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: 2rem;
+    letter-spacing: 0.03em;
+    border-left: 8px solid var(--brand-yellow);
+    padding-left: 1.5rem;
+}
+.presentation-exit { position: absolute; top: 1.5rem; right: 1.5rem; }
+.presentation-nav { position: absolute; bottom: 1.5rem; right: 1.5rem; }
 
-/* === OŚ CZASU === */
+/* === OŚ CZASU (używana w prezentacji) === */
 .timeline { border-left: 3px solid rgba(240, 163, 10, 0.3); position: relative; list-style: none; padding-left: 2.5rem; margin-top: 2rem; }
 .timeline-item { margin-bottom: 2rem; }
-.timeline-item::before { content: ''; background: var(--bg-primary); border-radius: 50%; border: 4px solid var(--brand-yellow); position: absolute; left: -13px; width: 24px; height: 24px; z-index: 2; box-shadow: 0 2px 8px 0 rgba(0,0,0,0.5); }
+.timeline-item::before { content: ''; background: #212529; border-radius: 50%; border: 4px solid var(--brand-yellow); position: absolute; left: -13px; width: 24px; height: 24px; z-index: 2; box-shadow: 0 2px 8px 0 rgba(0,0,0,0.5); }
 .timeline-item .timeline-date { font-weight: 600; color: var(--brand-yellow); }
