@@ -8,13 +8,18 @@ import dash_bootstrap_components as dbc
 # === KONFIGURACJA APLIKACJI ===
 
 # Inicjalizacja aplikacji Dash.
-# Aplikacja automatycznie załaduje pliki z folderu /assets (gdzie jest style.css)
+# Aplikacja automatycznie załaduje pliki z folderu /assets (gdzie jest style.css i tram.png)
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP, 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap'],
     suppress_callback_exceptions=True,
     title="Portfel Projektów Biuro Teleinformatyki"
 )
+
+# === KLUCZOWA POPRAWKA DLA WDROŻENIA ===
+# Ta linia udostępnia serwer Flask (który jest pod spodem Dasha)
+# dla serwera produkcyjnego Gunicorn.
+server = app.server
 
 # Paleta kolorów, używana w komponentach Python (np. wykresy)
 WARSAW_TRAM_COLORS = {
@@ -431,10 +436,20 @@ def display_page(pathname):
     """Router aplikacji - renderuje widok na podstawie URL."""
     if pathname == '/':
         return dbc.Container([
-            html.Div([
-                html.H1([html.I(className="bi bi-kanban-fill me-3"), "Portfel Projektów Biuro Teleinformatyki"], className="main-header"),
-                dbc.Button([html.I(className="bi bi-plus-circle-dotted me-2"), "Nowy Projekt"], id="open-add-project-modal", color="success", className="mt-3 mt-md-0"),
-            ], className="d-flex justify-content-between align-items-center flex-wrap my-4"),
+            html.Div(className='hero-banner', children=[
+                html.Img(src=app.get_asset_url('tram.png')),
+                html.Div(className='overlay'),
+                html.Div(className='hero-text', children=[
+                    html.H1("Portfel Projektów Biuro Teleinformatyki"),
+                ])
+            ]),
+            dbc.Row([
+                dbc.Col(html.H2("Projekty w toku", className="mb-0")),
+                dbc.Col(
+                    dbc.Button([html.I(className="bi bi-plus-circle-dotted me-2"), "Nowy Projekt"], id="open-add-project-modal", color="success"),
+                    className="text-end"
+                )
+            ], align="center", className="mb-4"),
             html.Div(id='portfolio-list', children=create_main_layout())
         ], fluid=True, className="p-4")
     
