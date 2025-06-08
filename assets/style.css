@@ -1,0 +1,188 @@
+/* === GŁÓWNY MOTYW I TŁO === */
+body {
+    /* Używamy subtelnego gradientu dla nowoczesnego wyglądu */
+    background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    color: #343a40;
+}
+
+/* === STYLIZACJA PASKÓW PRZEWIJANIA === */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c40202aa; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #c40202; }
+
+/* === BANER POWITALNY (NOWY) === */
+.hero-banner {
+    position: relative;
+    border-radius: 1rem;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.3);
+}
+.hero-banner img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    display: block;
+}
+.hero-banner .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(196, 2, 2, 0.7) 0%, rgba(52, 58, 64, 0.7) 100%);
+    opacity: 0.8;
+}
+.hero-banner .hero-text {
+    position: absolute;
+    top: 50%;
+    left: 5%;
+    transform: translateY(-50%);
+    color: white;
+    padding: 2rem;
+}
+.hero-banner .hero-text h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+}
+
+
+/* === STRONA GŁÓWNA - KARTY PROJEKTÓW === */
+.card-link {
+    color: inherit;
+    text-decoration: none;
+}
+.project-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 4px 24px 0 rgba(196, 2, 2, 0.1);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    background: rgba(255, 255, 255, 0.95);
+}
+.card-link:hover .project-card {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 10px 40px 0 rgba(196, 2, 2, 0.2);
+}
+.project-card .card-header {
+    background-color: #343a40;
+    color: #ffffff;
+    font-weight: 600;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+.progress-bar {
+    background-color: #f0a30a !important;
+}
+
+/* === NAGŁÓWKI I PRZYCISKI === */
+.main-header {
+    color: #c40202;
+    font-weight: 700;
+    border-bottom: 3px solid #f0a30a;
+    padding-bottom: 10px;
+}
+.btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+    background-color: #c40202 !important;
+    border-color: #c40202 !important;
+    box-shadow: none !important;
+}
+.btn-success, .btn-success:hover {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+/* === WIDOK SZCZEGÓŁÓW PROJEKTU === */
+.nav-tabs .nav-link.active {
+    color: #c40202;
+    border-bottom: 3px solid #c40202;
+    font-weight: 600;
+}
+.kpi-card {
+    border: none;
+    border-left: 5px solid #f0a30a;
+    background-color: #ffffff;
+    padding: 1rem;
+    text-align: center;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+
+/* === TRYB PREZENTACJI - EFEKT WOW === */
+.presentation-body {
+    background: linear-gradient(135deg, #343a40 0%, #212529 100%) !important;
+    color: #f8f9fa;
+}
+.presentation-container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 3rem 1rem;
+}
+.presentation-title {
+    font-weight: 800;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    letter-spacing: 0.03em;
+    border-left: 8px solid #f0a30a;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+}
+.presentation-kpi-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem 1rem;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    transition: transform 0.3s;
+}
+.presentation-kpi-card:hover {
+    transform: scale(1.05);
+}
+.presentation-kpi-card .kpi-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #f0a30a;
+}
+.presentation-kpi-card .kpi-label {
+    font-size: 1rem;
+    color: #ced4da;
+}
+
+/* === STYLIZOWANA OŚ CZASU (TIMELINE) W PREZENTACJI === */
+.timeline {
+    border-left: 3px solid rgba(240, 163, 10, 0.3); /* #f0a30a */
+    position: relative;
+    list-style: none;
+    padding-left: 2.5rem;
+    margin-top: 2rem;
+}
+.timeline-item {
+    margin-bottom: 2rem;
+}
+.timeline-item::before {
+    content: '';
+    background: #343a40;
+    border-radius: 50%;
+    border: 4px solid #f0a30a;
+    position: absolute;
+    left: -13px;
+    width: 24px;
+    height: 24px;
+    z-index: 2;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.5);
+}
+.timeline-item .timeline-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+}
+.timeline-item .timeline-date {
+    font-weight: 600;
+    color: #f0a30a;
+}
