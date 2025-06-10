@@ -3,7 +3,7 @@
 """
 ==============================================================================
 NOWOCZESNY SYSTEM ZARZĄDZANIA PORTFELEM PROJEKTÓW IT
-Autor: AI Assistant
+Autor: Patryk Czyżewski
 Wersja: 3.0 PRODUCTION READY
 Licencja: MIT
 
@@ -60,6 +60,8 @@ class AppConfig:
         }
 
 config = AppConfig()
+import os
+PORT = int(os.environ.get('PORT', 8050))
 
 # === LOGGING SETUP ===
 logging.basicConfig(
@@ -966,6 +968,202 @@ def create_404_layout():
             ], width=8, className="mx-auto")
         ], className="min-vh-100 d-flex align-items-center")
     ], fluid=True)
+def create_global_modals():
+    """Tworzy globalne modale aplikacji"""
+    return html.Div([
+        # Modal dodawania projektu
+        dbc.Modal([
+            dbc.ModalHeader([
+                html.I(className="bi bi-plus-circle-fill me-2 text-success"),
+                "Dodaj nowy projekt"
+            ]),
+            dbc.ModalBody([
+                dbc.Form([
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Nazwa projektu *", className="fw-bold"),
+                            dbc.Input(
+                                id="new-project-name",
+                                placeholder="np. Modernizacja systemu...",
+                                required=True,
+                                className="mb-3"
+                            )
+                        ], width=12)
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Opis projektu", className="fw-bold"),
+                            dbc.Textarea(
+                                id="new-project-description",
+                                placeholder="Szczegółowy opis celów i zakresu projektu...",
+                                rows=3,
+                                className="mb-3"
+                            )
+                        ], width=12)
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Kierownik projektu", className="fw-bold"),
+                            dbc.Input(
+                                id="new-project-manager",
+                                placeholder="np. Jan Kowalski",
+                                className="mb-3"
+                            )
+                        ], width=6),
+                        dbc.Col([
+                            dbc.Label("Wykonawca", className="fw-bold"),
+                            dbc.Input(
+                                id="new-project-contractor",
+                                placeholder="np. Firma XYZ Sp. z o.o.",
+                                className="mb-3"
+                            )
+                        ], width=6)
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Budżet planowany (PLN)", className="fw-bold"),
+                            dbc.Input(
+                                id="new-project-budget",
+                                type="number",
+                                min=0,
+                                step=1000,
+                                placeholder="np. 1000000",
+                                className="mb-3"
+                            )
+                        ], width=4),
+                        dbc.Col([
+                            dbc.Label("Status", className="fw-bold"),
+                            dbc.Select(
+                                id="new-project-status",
+                                options=[
+                                    {'label': '📋 Planowany', 'value': 'Planowany'},
+                                    {'label': '▶️ W toku', 'value': 'W toku'},
+                                    {'label': '⏸️ Wstrzymany', 'value': 'Wstrzymany'}
+                                ],
+                                value='Planowany',
+                                className="mb-3"
+                            )
+                        ], width=4),
+                        dbc.Col([
+                            dbc.Label("Priorytet", className="fw-bold"),
+                            dbc.Select(
+                                id="new-project-priority",
+                                options=[
+                                    {'label': '🔴 Krytyczny', 'value': 'Krytyczny'},
+                                    {'label': '🟡 Wysoki', 'value': 'Wysoki'},
+                                    {'label': '🔵 Średni', 'value': 'Średni'},
+                                    {'label': '🟢 Niski', 'value': 'Niski'}
+                                ],
+                                value='Średni',
+                                className="mb-3"
+                            )
+                        ], width=4)
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Data rozpoczęcia", className="fw-bold"),
+                            dbc.Input(
+                                id="new-project-start-date",
+                                type="date",
+                                className="mb-3"
+                            )
+                        ], width=6),
+                        dbc.Col([
+                            dbc.Label("Planowana data zakończenia", className="fw-bold"),
+                            dbc.Input(
+                                id="new-project-end-date",
+                                type="date",
+                                className="mb-3"
+                            )
+                        ], width=6)
+                    ])
+                ])
+            ]),
+            dbc.ModalFooter([
+                dbc.Button("Anuluj", id="cancel-add-project", color="secondary", className="me-2"),
+                dbc.Button([
+                    html.I(className="bi bi-check-circle-fill me-2"),
+                    "Zapisz projekt"
+                ], id="submit-add-project", color="success")
+            ]),
+            html.Div(id="add-project-feedback")
+        ], id="add-project-modal", size="lg", is_open=False, centered=True),
+        
+        # Modal potwierdzenia usunięcia
+        dbc.Modal([
+            dbc.ModalHeader([
+                html.I(className="bi bi-exclamation-triangle-fill me-2 text-danger"),
+                "Potwierdzenie usunięcia"
+            ]),
+            dbc.ModalBody([
+                html.P("Czy na pewno chcesz usunąć ten projekt?", className="lead"),
+                html.P("Ta operacja jest nieodwracalna i spowoduje usunięcie wszystkich powiązanych danych.", 
+                      className="text-muted small"),
+                html.Div(id="delete-project-name", className="fw-bold text-danger")
+            ]),
+            dbc.ModalFooter([
+                dbc.Button("Anuluj", id="cancel-delete-project", color="secondary", className="me-2"),
+                dbc.Button([
+                    html.I(className="bi bi-trash-fill me-2"),
+                    "Usuń projekt"
+                ], id="confirm-delete-project", color="danger")
+            ])
+        ], id="delete-project-modal", is_open=False, centered=True),
+        
+        # Modal pomocy
+        dbc.Modal([
+            dbc.ModalHeader([
+                html.I(className="bi bi-question-circle-fill me-2 text-info"),
+                "Pomoc - Portfolio IT Manager"
+            ]),
+            dbc.ModalBody([
+                dbc.Accordion([
+                    dbc.AccordionItem([
+                        html.P("System Portfolio IT Manager pozwala na kompleksowe zarządzanie projektami IT w organizacji."),
+                        html.Ul([
+                            html.Li("Śledzenie postępu projektów w czasie rzeczywistym"),
+                            html.Li("Zarządzanie budżetem i kosztami"),
+                            html.Li("Monitorowanie ryzyk i kamieni milowych"),
+                            html.Li("Zarządzanie zespołami projektowymi"),
+                            html.Li("Generowanie raportów i analiz")
+                        ])
+                    ], title="🎯 Funkcjonalności systemu"),
+                    
+                    dbc.AccordionItem([
+                        html.P("Nawigacja po systemie:"),
+                        html.Ul([
+                            html.Li("Strona główna - przegląd wszystkich projektów"),
+                            html.Li("Kliknij na kartę projektu aby zobaczyć szczegóły"),
+                            html.Li("Użyj filtrów aby znaleźć konkretne projekty"),
+                            html.Li("Tryb prezentacji - pełnoekranowy widok projektu")
+                        ])
+                    ], title="🧭 Nawigacja"),
+                    
+                    dbc.AccordionItem([
+                        html.P("Skróty klawiszowe:"),
+                        html.Ul([
+                            html.Li("Ctrl + N - Nowy projekt"),
+                            html.Li("Ctrl + F - Wyszukiwanie"),
+                            html.Li("Ctrl + D - Tryb ciemny"),
+                            html.Li("Esc - Zamknij modal")
+                        ])
+                    ], title="⌨️ Skróty klawiszowe"),
+                    
+                    dbc.AccordionItem([
+                        html.P("W przypadku problemów:"),
+                        html.Ul([
+                            html.Li("Sprawdź logi aplikacji (app.log)"),
+                            html.Li("Upewnij się, że baza danych jest dostępna"),
+                            html.Li("Skontaktuj się z administratorem systemu")
+                        ])
+                    ], title="🔧 Rozwiązywanie problemów")
+                ], start_collapsed=True)
+            ]),
+            dbc.ModalFooter([
+                dbc.Button("Zamknij", id="close-help-modal", color="primary")
+            ])
+        ], id="help-modal", size="lg", is_open=False, centered=True)
+    ])
 
 # === GŁÓWNY LAYOUT APLIKACJI ===
 app.layout = html.Div([
