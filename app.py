@@ -614,7 +614,7 @@ class UIComponents:
                                 dbc.Badge([
                                     html.I(className=f"{priority_config[priority]['icon']} me-1"),
                                     priority
-                                ], color=priority_config[priority]['color'], outline=True, className="d-block")
+                                ], color=priority_config[priority]['color'], className="d-block")
                             ], width=4, className="text-end")
                         ])
                     ], className="border-0"),
@@ -1973,7 +1973,7 @@ def create_risks_tab_content(project_id: int):
                             html.H6(risk['title'], className="mb-1 fw-bold"),
                             dbc.Badge(f"{risk['probability']} / {risk['impact']}", 
                                     color=risk_color, className="me-2"),
-                            dbc.Badge(risk['status'], color="secondary", outline=True)
+                            dbc.Badge(risk['status'], color="secondary",)
                         ], width=8),
                         dbc.Col([
                             html.Small(f"Właściciel: {risk.get('owner', 'Brak')}", className="d-block text-muted"),
