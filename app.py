@@ -495,6 +495,30 @@ class DataService:
             conn.commit()
 
     @staticmethod
+    def add_project(data: Dict) -> int:
+        """Dodaje nowy projekt i zwraca jego ID"""
+        with db_manager.get_connection() as conn:
+            cursor = conn.execute(
+                '''INSERT INTO projects
+                   (name, description, project_manager, contractor_name,
+                    budget_plan, status, priority, start_date, end_date)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                (
+                    data.get('name'),
+                    data.get('description', ''),
+                    data.get('project_manager', ''),
+                    data.get('contractor_name', ''),
+                    data.get('budget_plan', 0),
+                    data.get('status', 'W toku'),
+                    data.get('priority', 'Średni'),
+                    data.get('start_date', ''),
+                    data.get('end_date', '')
+                )
+            )
+            conn.commit()
+            return cursor.lastrowid
+
+    @staticmethod
     def update_project(project_id: int, data: Dict) -> None:
         """Aktualizuje dane projektu"""
         DataService.execute_query(
@@ -2598,7 +2622,8 @@ def toggle_modals(*args):
 # Callback dla dodawania nowego projektu
 @app.callback(
     [Output('add-project-modal', 'is_open', allow_duplicate=True),
-     Output('toast-container', 'children')],
+     Output('toast-container', 'children'),
+     Output('url', 'pathname')],
     Input('submit-add-project', 'n_clicks'),
     [State('new-project-name', 'value'),
      State('new-project-description', 'value'),
@@ -2614,23 +2639,27 @@ def toggle_modals(*args):
 def add_new_project(n_clicks, name, description, manager, contractor, budget, status, priority, start_date, end_date):
     """Dodaje nowy projekt do bazy danych"""
     if not n_clicks or not name:
-        return no_update, no_update
-    
+        return no_update, no_update, no_update
+
     try:
-        DataService.execute_query(
-            '''INSERT INTO projects 
-               (name, description, project_manager, contractor_name, budget_plan, status, priority, start_date, end_date) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-            (name, description or '', manager or '', contractor or '', budget or 0, 
-             status, priority, start_date or '', end_date or '')
-        )
-        
+        project_id = DataService.add_project({
+            'name': name,
+            'description': description,
+            'project_manager': manager,
+            'contractor_name': contractor,
+            'budget_plan': budget or 0,
+            'status': status,
+            'priority': priority,
+            'start_date': start_date,
+            'end_date': end_date,
+        })
+
         toast = dbc.Toast([
             html.I(className="bi bi-check-circle-fill me-2"),
             f"Projekt '{name}' został dodany pomyślnie!"
         ], header="Sukces", icon="success", duration=4000, is_open=True)
-        
-        return False, toast
+
+        return False, toast, f"/projekt/{project_id}"
         
     except Exception as e:
         logger.error(f"Error adding project: {e}")
@@ -2639,7 +2668,7 @@ def add_new_project(n_clicks, name, description, manager, contractor, budget, st
             "Błąd podczas dodawania projektu. Spróbuj ponownie."
         ], header="Błąd", icon="danger", duration=4000, is_open=True)
         
-        return no_update, toast
+        return no_update, toast, no_update
 
 # Callback otwierający modal edycji projektu i wypełniający dane
 @app.callback(
@@ -2677,7 +2706,8 @@ def open_edit_project(n_open, n_cancel, project_id):
 # Callback zapisujący zmiany projektu
 @app.callback(
     [Output('edit-project-modal', 'is_open', allow_duplicate=True),
-     Output('toast-container', 'children')],
+     Output('toast-container', 'children'),
+     Output('url', 'pathname')],
     Input('submit-edit-project', 'n_clicks'),
     [State('project-id-store', 'data'),
      State('edit-project-name', 'value'),
@@ -2713,14 +2743,14 @@ def save_project_edits(n_clicks, project_id, name, description, manager, contrac
             "Projekt zaktualizowany"
         ], header="Sukces", icon="success", duration=4000, is_open=True)
 
-        return False, toast
+        return False, toast, f"/projekt/{project_id}"
     except Exception as e:
         logger.error(f"Error updating project: {e}")
         toast = dbc.Toast([
             html.I(className="bi bi-x-circle-fill me-2"),
             "Błąd podczas zapisu zmian"
         ], header="Błąd", icon="danger", duration=4000, is_open=True)
-        return no_update, toast
+        return no_update, toast, no_update
 
 # === CALLBACKI PREZENTACJI ===
 @app.callback(
@@ -2768,7 +2798,7 @@ def render_presentation(slide_index, project_id):
 def exit_presentation(n_clicks, project_id):
     if n_clicks:
         return f"/projekt/{project_id}"
-    return dash.no_update
+    return no_update
 
 if __name__ == '__main__':
     logger.info("Starting Portfolio IT Manager application...")
