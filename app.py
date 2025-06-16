@@ -493,6 +493,29 @@ class DataService:
         with db_manager.get_connection() as conn:
             conn.execute(query, params)
             conn.commit()
+
+    @staticmethod
+    def update_project(project_id: int, data: Dict) -> None:
+        """Aktualizuje dane projektu"""
+        DataService.execute_query(
+            '''UPDATE projects
+               SET name = ?, description = ?, project_manager = ?,
+                   contractor_name = ?, budget_plan = ?, status = ?,
+                   priority = ?, start_date = ?, end_date = ?
+             WHERE id = ?''',
+            (
+                data.get('name'),
+                data.get('description', ''),
+                data.get('project_manager', ''),
+                data.get('contractor_name', ''),
+                data.get('budget_plan', 0),
+                data.get('status'),
+                data.get('priority'),
+                data.get('start_date', ''),
+                data.get('end_date', ''),
+                project_id,
+            )
+        )
     
     @staticmethod
     def fetch_data(query: str, params: Tuple = ()) -> List[Dict]:
@@ -1675,7 +1698,83 @@ def create_project_modals():
                     "Dodaj ryzyko"
                 ], id="submit-add-risk", color="warning")
             ])
-        ], id="add-risk-modal", size="lg", is_open=False, centered=True)
+        ], id="add-risk-modal", size="lg", is_open=False, centered=True),
+
+        # Modal edycji projektu
+        dbc.Modal([
+            dbc.ModalHeader([
+                html.I(className="bi bi-pencil-square me-2 text-primary"),
+                "Edytuj projekt"
+            ]),
+            dbc.ModalBody([
+                dbc.Form([
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Nazwa projektu *", className="fw-bold"),
+                            dbc.Input(id="edit-project-name", required=True, className="mb-3")
+                        ], width=12)
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Opis projektu", className="fw-bold"),
+                            dbc.Textarea(id="edit-project-description", rows=3, className="mb-3")
+                        ], width=12)
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Kierownik projektu", className="fw-bold"),
+                            dbc.Input(id="edit-project-manager", className="mb-3")
+                        ], width=6),
+                        dbc.Col([
+                            dbc.Label("Wykonawca", className="fw-bold"),
+                            dbc.Input(id="edit-project-contractor", className="mb-3")
+                        ], width=6)
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Budżet planowany (PLN)", className="fw-bold"),
+                            dbc.Input(id="edit-project-budget", type="number", min=0, step=1000, className="mb-3")
+                        ], width=4),
+                        dbc.Col([
+                            dbc.Label("Status", className="fw-bold"),
+                            dbc.Select(id="edit-project-status", options=[
+                                {'label': '📋 Planowany', 'value': 'Planowany'},
+                                {'label': '▶️ W toku', 'value': 'W toku'},
+                                {'label': '✅ Zakończony', 'value': 'Zakończony'},
+                                {'label': '⚠️ Zagrożony', 'value': 'Zagrożony'},
+                                {'label': '⏸️ Wstrzymany', 'value': 'Wstrzymany'}
+                            ], className="mb-3")
+                        ], width=4),
+                        dbc.Col([
+                            dbc.Label("Priorytet", className="fw-bold"),
+                            dbc.Select(id="edit-project-priority", options=[
+                                {'label': '🔴 Krytyczny', 'value': 'Krytyczny'},
+                                {'label': '🟡 Wysoki', 'value': 'Wysoki'},
+                                {'label': '🔵 Średni', 'value': 'Średni'},
+                                {'label': '🟢 Niski', 'value': 'Niski'}
+                            ], className="mb-3")
+                        ], width=4)
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Data rozpoczęcia", className="fw-bold"),
+                            dbc.Input(id="edit-project-start-date", type="date", className="mb-3")
+                        ], width=6),
+                        dbc.Col([
+                            dbc.Label("Planowana data zakończenia", className="fw-bold"),
+                            dbc.Input(id="edit-project-end-date", type="date", className="mb-3")
+                        ], width=6)
+                    ])
+                ])
+            ]),
+            dbc.ModalFooter([
+                dbc.Button("Anuluj", id="cancel-edit-project", color="secondary", className="me-2"),
+                dbc.Button([
+                    html.I(className="bi bi-check-circle-fill me-2"),
+                    "Zapisz zmiany"
+                ], id="submit-edit-project", color="success")
+            ])
+        ], id="edit-project-modal", size="lg", is_open=False, centered=True)
     ])
 
 # === FUNKCJE POMOCNICZE ===
@@ -2305,6 +2404,23 @@ def create_risk_statistics_chart(project_id: int):
     
     return fig
 
+def create_presentation_slides(project_id: int) -> List[html.Div]:
+    """Generuje listę slajdów dla trybu prezentacji"""
+    project = DataService.get_project_by_id(project_id)
+    if not project:
+        return []
+
+    slides = [
+        html.Div([
+            html.H2(project['name'], className='presentation-title'),
+            html.P(project.get('description', ''), className='lead')
+        ], className='presentation-slide'),
+        html.Div(create_project_kpi_cards(project_id), className='presentation-slide'),
+        html.Div(create_analytics_tab_content(project_id), className='presentation-slide')
+    ]
+
+    return slides
+
 def create_presentation_layout(project_id: int):
     """Tworzy layout trybu prezentacji"""
     project = DataService.get_project_by_id(project_id)
@@ -2313,6 +2429,8 @@ def create_presentation_layout(project_id: int):
     
     return html.Div([
         dcc.Store(id='presentation-slide', data=0),
+        dcc.Store(id='project-id-store', data=project_id),
+        dcc.Location(id='presentation-redirect'),
         
         # Kontrolki prezentacji
         html.Div([
@@ -2446,31 +2564,36 @@ clientside_callback(
 @app.callback(
     [Output('add-project-modal', 'is_open'),
      Output('help-modal', 'is_open'),
-     Output('delete-project-modal', 'is_open')],
+     Output('delete-project-modal', 'is_open'),
+     Output('edit-project-modal', 'is_open')],
     [Input('open-add-project-modal', 'n_clicks'),
      Input('help-btn', 'n_clicks'),
      Input('delete-project-btn', 'n_clicks'),
+     Input('edit-project-btn', 'n_clicks'),
      Input('cancel-add-project', 'n_clicks'),
      Input('close-help-modal', 'n_clicks'),
-     Input('cancel-delete-project', 'n_clicks')],
+     Input('cancel-delete-project', 'n_clicks'),
+     Input('cancel-edit-project', 'n_clicks')],
     prevent_initial_call=True
 )
 def toggle_modals(*args):
     """Kontroluje otwieranie i zamykanie modali"""
     ctx = callback_context
     if not ctx.triggered:
-        return False, False, False
+        return False, False, False, False
     
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     
     if button_id == 'open-add-project-modal':
-        return True, False, False
+        return True, False, False, False
     elif button_id == 'help-btn':
-        return False, True, False
+        return False, True, False, False
     elif button_id == 'delete-project-btn':
-        return False, False, True
+        return False, False, True, False
+    elif button_id == 'edit-project-btn':
+        return False, False, False, True
     else:
-        return False, False, False
+        return False, False, False, False
 
 # Callback dla dodawania nowego projektu
 @app.callback(
@@ -2517,6 +2640,135 @@ def add_new_project(n_clicks, name, description, manager, contractor, budget, st
         ], header="Błąd", icon="danger", duration=4000, is_open=True)
         
         return no_update, toast
+
+# Callback otwierający modal edycji projektu i wypełniający dane
+@app.callback(
+    [Output('edit-project-modal', 'is_open', allow_duplicate=True),
+     Output('edit-project-name', 'value'),
+     Output('edit-project-description', 'value'),
+     Output('edit-project-manager', 'value'),
+     Output('edit-project-contractor', 'value'),
+     Output('edit-project-budget', 'value'),
+     Output('edit-project-status', 'value'),
+     Output('edit-project-priority', 'value'),
+     Output('edit-project-start-date', 'value'),
+     Output('edit-project-end-date', 'value')],
+    [Input('edit-project-btn', 'n_clicks'),
+     Input('cancel-edit-project', 'n_clicks')],
+    State('project-id-store', 'data'),
+    prevent_initial_call=True
+)
+def open_edit_project(n_open, n_cancel, project_id):
+    ctx = callback_context
+    if not ctx.triggered:
+        raise PreventUpdate
+    if ctx.triggered_id == 'cancel-edit-project':
+        return False, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update
+
+    project = DataService.get_project_by_id(project_id)
+    if not project:
+        raise PreventUpdate
+
+    return True, project['name'], project.get('description', ''), project.get('project_manager', ''), \
+        project.get('contractor_name', ''), project.get('budget_plan', 0), project.get('status', 'W toku'), \
+        project.get('priority', 'Średni'), project.get('start_date', ''), project.get('end_date', '')
+
+
+# Callback zapisujący zmiany projektu
+@app.callback(
+    [Output('edit-project-modal', 'is_open', allow_duplicate=True),
+     Output('toast-container', 'children')],
+    Input('submit-edit-project', 'n_clicks'),
+    [State('project-id-store', 'data'),
+     State('edit-project-name', 'value'),
+     State('edit-project-description', 'value'),
+     State('edit-project-manager', 'value'),
+     State('edit-project-contractor', 'value'),
+     State('edit-project-budget', 'value'),
+     State('edit-project-status', 'value'),
+     State('edit-project-priority', 'value'),
+     State('edit-project-start-date', 'value'),
+     State('edit-project-end-date', 'value')],
+    prevent_initial_call=True
+)
+def save_project_edits(n_clicks, project_id, name, description, manager, contractor, budget, status, priority, start_date, end_date):
+    if not n_clicks or not project_id or not name:
+        raise PreventUpdate
+
+    try:
+        DataService.update_project(project_id, {
+            'name': name,
+            'description': description,
+            'project_manager': manager,
+            'contractor_name': contractor,
+            'budget_plan': budget or 0,
+            'status': status,
+            'priority': priority,
+            'start_date': start_date,
+            'end_date': end_date
+        })
+
+        toast = dbc.Toast([
+            html.I(className="bi bi-check-circle-fill me-2"),
+            "Projekt zaktualizowany"
+        ], header="Sukces", icon="success", duration=4000, is_open=True)
+
+        return False, toast
+    except Exception as e:
+        logger.error(f"Error updating project: {e}")
+        toast = dbc.Toast([
+            html.I(className="bi bi-x-circle-fill me-2"),
+            "Błąd podczas zapisu zmian"
+        ], header="Błąd", icon="danger", duration=4000, is_open=True)
+        return no_update, toast
+
+# === CALLBACKI PREZENTACJI ===
+@app.callback(
+    Output('presentation-slide', 'data'),
+    [Input('next-slide', 'n_clicks'),
+     Input('prev-slide', 'n_clicks')],
+    State('presentation-slide', 'data'),
+    State('project-id-store', 'data'),
+    prevent_initial_call=True
+)
+def change_slide(next_click, prev_click, current, project_id):
+    total = len(create_presentation_slides(project_id))
+    if total == 0:
+        return 0
+    ctx = callback_context
+    if not ctx.triggered:
+        return current
+    triggered = ctx.triggered[0]['prop_id'].split('.')[0]
+    if triggered == 'next-slide':
+        return (current + 1) % total
+    elif triggered == 'prev-slide':
+        return (current - 1) % total
+    return current
+
+
+@app.callback(
+    Output('presentation-content', 'children'),
+    [Input('presentation-slide', 'data'),
+     Input('project-id-store', 'data')]
+)
+def render_presentation(slide_index, project_id):
+    slides = create_presentation_slides(project_id)
+    if not slides:
+        return html.Div("Brak danych")
+    slide_index = max(0, min(slide_index, len(slides) - 1))
+    return slides[slide_index]
+
+
+@app.callback(
+    Output('presentation-redirect', 'href'),
+    Input('exit-presentation', 'n_clicks'),
+    State('project-id-store', 'data'),
+    prevent_initial_call=True
+)
+def exit_presentation(n_clicks, project_id):
+    if n_clicks:
+        return f"/projekt/{project_id}"
+    return dash.no_update
 
 if __name__ == '__main__':
     logger.info("Starting Portfolio IT Manager application...")
