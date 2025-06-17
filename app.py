@@ -495,6 +495,32 @@ class DataService:
             conn.commit()
 
     @staticmethod
+
+    def add_project(data: Dict) -> int:
+        """Dodaje nowy projekt i zwraca jego ID"""
+        with db_manager.get_connection() as conn:
+            cursor = conn.execute(
+                '''INSERT INTO projects
+                   (name, description, project_manager, contractor_name,
+                    budget_plan, status, priority, start_date, end_date)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                (
+                    data.get('name'),
+                    data.get('description', ''),
+                    data.get('project_manager', ''),
+                    data.get('contractor_name', ''),
+                    data.get('budget_plan', 0),
+                    data.get('status', 'W toku'),
+                    data.get('priority', 'Średni'),
+                    data.get('start_date', ''),
+                    data.get('end_date', '')
+                )
+            )
+            conn.commit()
+            return cursor.lastrowid
+
+    @staticmethod
+     main
     def update_project(project_id: int, data: Dict) -> None:
         """Aktualizuje dane projektu"""
         DataService.execute_query(
@@ -534,9 +560,11 @@ class UIComponents:
             html.Img(src=app.get_asset_url('tram.png'), alt="Tramwaj warszawski"),
             html.Div(className='overlay'),
             html.Div(className='hero-text', children=[
-                html.H1("Portfolio Projektów IT", className="animate__animated animate__slideInLeft"),
-                html.P("Nowoczesne zarządzanie projektami infrastruktury miejskiej", 
-                      className="animate__animated animate__slideInLeft animate__delay-1s")
+                html.H1("Portfel Projektów Biuro IT Tramwaje Warszawskie", className="animate__animated animate__slideInLeft"),
+                html.P(
+                    "Nowoczesne zarządzanie projektami infrastruktury miejskiej",
+                    className="animate__animated animate__slideInLeft animate__delay-1s",
+                )
             ])
         ])
     
@@ -1210,7 +1238,7 @@ app.layout = html.Div([
         ],
         brand=[
             html.I(className="bi bi-kanban me-2"),
-            "Portfolio IT Manager"
+            "Portfel Projektów Biuro IT Tramwaje Warszawskie"
         ],
         brand_href="/",
         color=config.COLORS['dark_gray'],
@@ -2598,7 +2626,8 @@ def toggle_modals(*args):
 # Callback dla dodawania nowego projektu
 @app.callback(
     [Output('add-project-modal', 'is_open', allow_duplicate=True),
-     Output('toast-container', 'children')],
+     Output('toast-container', 'children'),
+     Output('url', 'pathname')],
     Input('submit-add-project', 'n_clicks'),
     [State('new-project-name', 'value'),
      State('new-project-description', 'value'),
@@ -2614,23 +2643,27 @@ def toggle_modals(*args):
 def add_new_project(n_clicks, name, description, manager, contractor, budget, status, priority, start_date, end_date):
     """Dodaje nowy projekt do bazy danych"""
     if not n_clicks or not name:
-        return no_update, no_update
-    
+        return no_update, no_update, no_update
+
     try:
-        DataService.execute_query(
-            '''INSERT INTO projects 
-               (name, description, project_manager, contractor_name, budget_plan, status, priority, start_date, end_date) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-            (name, description or '', manager or '', contractor or '', budget or 0, 
-             status, priority, start_date or '', end_date or '')
-        )
-        
+        project_id = DataService.add_project({
+            'name': name,
+            'description': description,
+            'project_manager': manager,
+            'contractor_name': contractor,
+            'budget_plan': budget or 0,
+            'status': status,
+            'priority': priority,
+            'start_date': start_date,
+            'end_date': end_date,
+        })
+
         toast = dbc.Toast([
             html.I(className="bi bi-check-circle-fill me-2"),
             f"Projekt '{name}' został dodany pomyślnie!"
         ], header="Sukces", icon="success", duration=4000, is_open=True)
-        
-        return False, toast
+
+        return False, toast, f"/projekt/{project_id}"
         
     except Exception as e:
         logger.error(f"Error adding project: {e}")
@@ -2639,7 +2672,137 @@ def add_new_project(n_clicks, name, description, manager, contractor, budget, st
             "Błąd podczas dodawania projektu. Spróbuj ponownie."
         ], header="Błąd", icon="danger", duration=4000, is_open=True)
         
-        return no_update, toast
+        return no_update, toast, no_update
+
+# Callback otwierający modal edycji projektu i wypełniający dane
+@app.callback(
+    [Output('edit-project-modal', 'is_open', allow_duplicate=True),
+     Output('edit-project-name', 'value'),
+     Output('edit-project-description', 'value'),
+     Output('edit-project-manager', 'value'),
+     Output('edit-project-contractor', 'value'),
+     Output('edit-project-budget', 'value'),
+     Output('edit-project-status', 'value'),
+     Output('edit-project-priority', 'value'),
+     Output('edit-project-start-date', 'value'),
+     Output('edit-project-end-date', 'value')],
+    [Input('edit-project-btn', 'n_clicks'),
+     Input('cancel-edit-project', 'n_clicks')],
+    State('project-id-store', 'data'),
+    prevent_initial_call=True
+)
+def open_edit_project(n_open, n_cancel, project_id):
+    ctx = callback_context
+    if not ctx.triggered:
+        raise PreventUpdate
+    if ctx.triggered_id == 'cancel-edit-project':
+        return False, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update
+
+    project = DataService.get_project_by_id(project_id)
+    if not project:
+        raise PreventUpdate
+
+    return True, project['name'], project.get('description', ''), project.get('project_manager', ''), \
+        project.get('contractor_name', ''), project.get('budget_plan', 0), project.get('status', 'W toku'), \
+        project.get('priority', 'Średni'), project.get('start_date', ''), project.get('end_date', '')
+
+
+# Callback zapisujący zmiany projektu
+@app.callback(
+    [Output('edit-project-modal', 'is_open', allow_duplicate=True),
+     Output('toast-container', 'children'),
+     Output('url', 'pathname')],
+    Input('submit-edit-project', 'n_clicks'),
+    [State('project-id-store', 'data'),
+     State('edit-project-name', 'value'),
+     State('edit-project-description', 'value'),
+     State('edit-project-manager', 'value'),
+     State('edit-project-contractor', 'value'),
+     State('edit-project-budget', 'value'),
+     State('edit-project-status', 'value'),
+     State('edit-project-priority', 'value'),
+     State('edit-project-start-date', 'value'),
+     State('edit-project-end-date', 'value')],
+    prevent_initial_call=True
+)
+def save_project_edits(n_clicks, project_id, name, description, manager, contractor, budget, status, priority, start_date, end_date):
+    if not n_clicks or not project_id or not name:
+        raise PreventUpdate
+
+    try:
+        DataService.update_project(project_id, {
+            'name': name,
+            'description': description,
+            'project_manager': manager,
+            'contractor_name': contractor,
+            'budget_plan': budget or 0,
+            'status': status,
+            'priority': priority,
+            'start_date': start_date,
+            'end_date': end_date
+        })
+
+        toast = dbc.Toast([
+            html.I(className="bi bi-check-circle-fill me-2"),
+            "Projekt zaktualizowany"
+        ], header="Sukces", icon="success", duration=4000, is_open=True)
+
+        return False, toast, f"/projekt/{project_id}"
+    except Exception as e:
+        logger.error(f"Error updating project: {e}")
+        toast = dbc.Toast([
+            html.I(className="bi bi-x-circle-fill me-2"),
+            "Błąd podczas zapisu zmian"
+        ], header="Błąd", icon="danger", duration=4000, is_open=True)
+        return no_update, toast, no_update
+
+# === CALLBACKI PREZENTACJI ===
+@app.callback(
+    Output('presentation-slide', 'data'),
+    [Input('next-slide', 'n_clicks'),
+     Input('prev-slide', 'n_clicks')],
+    State('presentation-slide', 'data'),
+    State('project-id-store', 'data'),
+    prevent_initial_call=True
+)
+def change_slide(next_click, prev_click, current, project_id):
+    total = len(create_presentation_slides(project_id))
+    if total == 0:
+        return 0
+    ctx = callback_context
+    if not ctx.triggered:
+        return current
+    triggered = ctx.triggered[0]['prop_id'].split('.')[0]
+    if triggered == 'next-slide':
+        return (current + 1) % total
+    elif triggered == 'prev-slide':
+        return (current - 1) % total
+    return current
+
+
+@app.callback(
+    Output('presentation-content', 'children'),
+    [Input('presentation-slide', 'data'),
+     Input('project-id-store', 'data')]
+)
+def render_presentation(slide_index, project_id):
+    slides = create_presentation_slides(project_id)
+    if not slides:
+        return html.Div("Brak danych")
+    slide_index = max(0, min(slide_index, len(slides) - 1))
+    return slides[slide_index]
+
+
+@app.callback(
+    Output('presentation-redirect', 'href'),
+    Input('exit-presentation', 'n_clicks'),
+    State('project-id-store', 'data'),
+    prevent_initial_call=True
+)
+def exit_presentation(n_clicks, project_id):
+    if n_clicks:
+        return f"/projekt/{project_id}"
+    return no_update
 
 # Callback otwierający modal edycji projektu i wypełniający dane
 @app.callback(
