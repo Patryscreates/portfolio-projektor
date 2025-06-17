@@ -1163,12 +1163,12 @@ def create_global_modals():
         dbc.Modal([
             dbc.ModalHeader([
                 html.I(className="bi bi-question-circle-fill me-2 text-info"),
-                "Pomoc - Portfolio IT Manager"
+                "Pomoc - Portfel Projektow Biuro IT Tramwaje Warszawskie"
             ]),
             dbc.ModalBody([
                 dbc.Accordion([
                     dbc.AccordionItem([
-                        html.P("System Portfolio IT Manager pozwala na kompleksowe zarządzanie projektami IT w organizacji."),
+                        html.P("System Portfel Projektow Biuro IT Tramwaje Warszawskie pozwala na kompleksowe zarządzanie projektami IT w organizacji."),
                         html.Ul([
                             html.Li("Śledzenie postępu projektów w czasie rzeczywistym"),
                             html.Li("Zarządzanie budżetem i kosztami"),
@@ -1409,12 +1409,12 @@ def create_global_modals():
         dbc.Modal([
             dbc.ModalHeader([
                 html.I(className="bi bi-question-circle-fill me-2 text-info"),
-                "Pomoc - Portfolio IT Manager"
+                "Pomoc - Portfel Projektow Biuro IT Tramwaje Warszawskie"
             ]),
             dbc.ModalBody([
                 dbc.Accordion([
                     dbc.AccordionItem([
-                        html.P("System Portfolio IT Manager pozwala na kompleksowe zarządzanie projektami IT w organizacji."),
+                        html.P("System Portfel Projektow Biuro IT Tramwaje Warszawskie pozwala na kompleksowe zarządzanie projektami IT w organizacji."),
                         html.Ul([
                             html.Li("Śledzenie postępu projektów w czasie rzeczywistym"),
                             html.Li("Zarządzanie budżetem i kosztami"),
@@ -2803,7 +2803,7 @@ def exit_presentation(n_clicks, project_id):
     return no_update
 
 if __name__ == '__main__':
-    logger.info("Starting Portfolio IT Manager application...")
+    logger.info("Starting Portfel Projektow Biuro IT Tramwaje Warszawskie application...")
     logger.info(f"Database file: {config.DB_FILE}")
     logger.info(f"Debug mode: {config.DEBUG}")
     logger.info(f"Server will run on {config.HOST}:{config.PORT}")
