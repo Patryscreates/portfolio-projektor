@@ -494,7 +494,8 @@ class DataService:
             conn.execute(query, params)
             conn.commit()
 
-    @staticmethod
+
+ main
     def add_project(data: Dict) -> int:
         """Dodaje nowy projekt i zwraca jego ID"""
         with db_manager.get_connection() as conn:
@@ -518,7 +519,10 @@ class DataService:
             conn.commit()
             return cursor.lastrowid
 
-    @staticmethod
+
+
+    
+ main
     def update_project(project_id: int, data: Dict) -> None:
         """Aktualizuje dane projektu"""
         DataService.execute_query(
@@ -2801,6 +2805,138 @@ def exit_presentation(n_clicks, project_id):
     if n_clicks:
         return f"/projekt/{project_id}"
     return no_update
+
+
+
+# Callback otwierający modal edycji projektu i wypełniający dane
+@app.callback(
+    [Output('edit-project-modal', 'is_open', allow_duplicate=True),
+     Output('edit-project-name', 'value'),
+     Output('edit-project-description', 'value'),
+     Output('edit-project-manager', 'value'),
+     Output('edit-project-contractor', 'value'),
+     Output('edit-project-budget', 'value'),
+     Output('edit-project-status', 'value'),
+     Output('edit-project-priority', 'value'),
+     Output('edit-project-start-date', 'value'),
+     Output('edit-project-end-date', 'value')],
+    [Input('edit-project-btn', 'n_clicks'),
+     Input('cancel-edit-project', 'n_clicks')],
+    State('project-id-store', 'data'),
+    prevent_initial_call=True
+)
+def open_edit_project(n_open, n_cancel, project_id):
+    ctx = callback_context
+    if not ctx.triggered:
+        raise PreventUpdate
+    if ctx.triggered_id == 'cancel-edit-project':
+        return False, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update
+
+    project = DataService.get_project_by_id(project_id)
+    if not project:
+        raise PreventUpdate
+
+    return True, project['name'], project.get('description', ''), project.get('project_manager', ''), \
+        project.get('contractor_name', ''), project.get('budget_plan', 0), project.get('status', 'W toku'), \
+        project.get('priority', 'Średni'), project.get('start_date', ''), project.get('end_date', '')
+
+
+# Callback zapisujący zmiany projektu
+@app.callback(
+    [Output('edit-project-modal', 'is_open', allow_duplicate=True),
+     Output('toast-container', 'children')],
+    Input('submit-edit-project', 'n_clicks'),
+    [State('project-id-store', 'data'),
+     State('edit-project-name', 'value'),
+     State('edit-project-description', 'value'),
+     State('edit-project-manager', 'value'),
+     State('edit-project-contractor', 'value'),
+     State('edit-project-budget', 'value'),
+     State('edit-project-status', 'value'),
+     State('edit-project-priority', 'value'),
+     State('edit-project-start-date', 'value'),
+     State('edit-project-end-date', 'value')],
+    prevent_initial_call=True
+)
+def save_project_edits(n_clicks, project_id, name, description, manager, contractor, budget, status, priority, start_date, end_date):
+    if not n_clicks or not project_id or not name:
+        raise PreventUpdate
+
+    try:
+        DataService.update_project(project_id, {
+            'name': name,
+            'description': description,
+            'project_manager': manager,
+            'contractor_name': contractor,
+            'budget_plan': budget or 0,
+            'status': status,
+            'priority': priority,
+            'start_date': start_date,
+            'end_date': end_date
+        })
+
+        toast = dbc.Toast([
+            html.I(className="bi bi-check-circle-fill me-2"),
+            "Projekt zaktualizowany"
+        ], header="Sukces", icon="success", duration=4000, is_open=True)
+
+        return False, toast
+    except Exception as e:
+        logger.error(f"Error updating project: {e}")
+        toast = dbc.Toast([
+            html.I(className="bi bi-x-circle-fill me-2"),
+            "Błąd podczas zapisu zmian"
+        ], header="Błąd", icon="danger", duration=4000, is_open=True)
+        return no_update, toast
+ main
+
+# === CALLBACKI PREZENTACJI ===
+@app.callback(
+    Output('presentation-slide', 'data'),
+    [Input('next-slide', 'n_clicks'),
+     Input('prev-slide', 'n_clicks')],
+    State('presentation-slide', 'data'),
+    State('project-id-store', 'data'),
+    prevent_initial_call=True
+)
+def change_slide(next_click, prev_click, current, project_id):
+    total = len(create_presentation_slides(project_id))
+    if total == 0:
+        return 0
+    ctx = callback_context
+    if not ctx.triggered:
+        return current
+    triggered = ctx.triggered[0]['prop_id'].split('.')[0]
+    if triggered == 'next-slide':
+        return (current + 1) % total
+    elif triggered == 'prev-slide':
+        return (current - 1) % total
+    return current
+
+
+@app.callback(
+    Output('presentation-content', 'children'),
+    [Input('presentation-slide', 'data'),
+     Input('project-id-store', 'data')]
+)
+def render_presentation(slide_index, project_id):
+    slides = create_presentation_slides(project_id)
+    if not slides:
+        return html.Div("Brak danych")
+    slide_index = max(0, min(slide_index, len(slides) - 1))
+    return slides[slide_index]
+
+
+@app.callback(
+    Output('presentation-redirect', 'href'),
+    Input('exit-presentation', 'n_clicks'),
+    State('project-id-store', 'data'),
+    prevent_initial_call=True
+)
+def exit_presentation(n_clicks, project_id):
+    if n_clicks:
+        return f"/projekt/{project_id}"
+    return dash.no_update
 
 if __name__ == '__main__':
     logger.info("Starting Portfel Projektow Biuro IT Tramwaje Warszawskie application...")
