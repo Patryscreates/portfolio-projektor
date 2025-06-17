@@ -614,7 +614,7 @@ class UIComponents:
                                 dbc.Badge([
                                     html.I(className=f"{priority_config[priority]['icon']} me-1"),
                                     priority
-                                ], color=priority_config[priority]['color'], outline=True, className="d-block")
+                                ], color=priority_config[priority]['color'],className="d-block")
                             ], width=4, className="text-end")
                         ])
                     ], className="border-0"),
