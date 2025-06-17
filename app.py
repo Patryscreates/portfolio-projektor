@@ -96,118 +96,6 @@ app = Dash(
 server = app.server
 app.config.suppress_callback_exceptions = True
 
-codex/napisz-wyjątkowy-kod-w-it
-# Paleta kolorów, używana w komponentach Python (np. wykresy)
-WARSAW_TRAM_COLORS = {
-    'primary_red': '#c40202',
-    'accent_yellow': '#f0a30a',
-    'dark_gray': '#343a40',
-    'medium_gray': '#6c757d',
-    'light_gray': '#f8f9fa',
-    'white': '#ffffff',
-    'success': '#28a745',
-    'info': '#0dcaf0',
-    'danger': '#dc3545'
-}
-
-DB_FILE = "portfolio_v2.db"
-
-# === ZARZĄDZANIE BAZĄ DANYCH ===
-
-def setup_database():
-    """Tworzy i inicjalizuje bazę danych."""
-    with sqlite3.connect(DB_FILE) as conn:
-        cursor = conn.cursor()
-        cursor.execute('PRAGMA foreign_keys = ON;')
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS projects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE,
-            project_manager TEXT, contractor_name TEXT, budget_plan REAL DEFAULT 0,
-            status TEXT DEFAULT 'W toku' CHECK(status IN ('W toku', 'Zakończony', 'Zagrożony', 'Wstrzymany')),
-            start_date TEXT, end_date TEXT
-        )''')
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS news (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, project_id INTEGER NOT NULL, date TEXT NOT NULL, content TEXT NOT NULL,
-            FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
-        )''')
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS milestones (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, project_id INTEGER NOT NULL, title TEXT NOT NULL,
-            start_date TEXT NOT NULL, end_date TEXT NOT NULL,
-            status TEXT DEFAULT 'Planowany' CHECK(status IN ('Planowany', 'W realizacji', 'Ukończony')),
-            FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
-        )''')
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS budget_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, project_id INTEGER NOT NULL, name TEXT NOT NULL,
-            category TEXT NOT NULL, actual REAL DEFAULT 0,
-            FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
-        )''')
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS risks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, project_id INTEGER NOT NULL, description TEXT NOT NULL,
-            probability TEXT NOT NULL CHECK(probability IN ('Niskie', 'Średnie', 'Wysokie')),
-            impact TEXT NOT NULL CHECK(impact IN ('Niski', 'Średni', 'Wysoki')),
-            status TEXT NOT NULL CHECK(status IN ('Aktywne', 'Zmitygowane', 'Zamknięte')),
-            mitigation_plan TEXT,
-            FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
-        )''')
-        cursor.execute("SELECT COUNT(id) FROM projects")
-        if cursor.fetchone()[0] == 0:
-            sample_projects = [
-                (
-                    'System Zarządzania Infrastrukturą IT',
-                    'Janina Nowak',
-                    'ITBuild S.A.',
-                    5200000,
-                    'W toku',
-                    '2024-01-15',
-                    '2025-06-30'
-                ),
-                (
-                    'Migracja do Chmury',
-                    'Adam Kowalski',
-                    'CloudMasters Sp. z o.o.',
-                    3400000,
-                    'Zagrożony',
-                    '2023-09-01',
-                    '2024-12-31'
-                ),
-                (
-                    'Wdrożenie Platformy E-commerce',
-                    'Ewa Wiśniewska',
-                    'PixelTech',
-                    1800000,
-                    'Zakończony',
-                    '2023-03-01',
-                    '2024-01-20'
-                )
-            ]
-            cursor.executemany("INSERT INTO projects (name, project_manager, contractor_name, budget_plan, status, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?, ?)", sample_projects)
-            conn.commit()
-            sample_data = {
-                'news': [
-                    (1, '2024-05-10', 'Zakończono konfigurację serwerów.'),
-                    (2, '2024-05-20', 'Problem z usługą chmurową.')
-                ],
-                'milestones': [
-                    (1, 'Analiza wymagań', '2024-01-15', '2024-03-31', 'Ukończony'),
-                    (1, 'Implementacja backendu', '2024-04-01', '2024-07-15', 'W realizacji')
-                ],
-                'budget_items': [
-                    (1, 'Sprzęt serwerowy', 'Infrastruktura', 1800000),
-                    (1, 'Prace developerskie', 'Zasoby', 1200000)
-                ],
-                'risks': [
-                    (1, 'Opóźnienia dostaw sprzętu', 'Średnie', 'Wysoki', 'Aktywne', 'Alternatywny dostawca.')
-                ]
-            }
-            cursor.executemany("INSERT INTO news (project_id, date, content) VALUES (?, ?, ?)", sample_data['news'])
-            cursor.executemany("INSERT INTO milestones (project_id, title, start_date, end_date, status) VALUES (?, ?, ?, ?, ?)", sample_data['milestones'])
-            cursor.executemany("INSERT INTO budget_items (project_id, name, category, actual) VALUES (?, ?, ?, ?)", sample_data['budget_items'])
-            cursor.executemany("INSERT INTO risks (project_id, description, probability, impact, status, mitigation_plan) VALUES (?, ?, ?, ?, ?, ?)", sample_data['risks'])
-=======
 # === MODUŁ BAZY DANYCH ===
 class DatabaseManager:
     """Zaawansowany manager bazy danych z connection pooling i error handling"""
@@ -382,7 +270,6 @@ class DatabaseManager:
             
             # Wypełnienie przykładowymi danymi
             self._populate_sample_data(cursor)
- main
             conn.commit()
             logger.info("Database setup completed successfully")
     
@@ -2648,3 +2535,4 @@ if __name__ == '__main__':
     except Exception as e:
         logger.error(f"Failed to start application: {e}")
         raise
+
